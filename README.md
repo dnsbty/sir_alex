@@ -1,20 +1,16 @@
-# SirAlex
+# Sir Alex
+![ferguson-celebrate](https://user-images.githubusercontent.com/3421625/32137456-8b8a2236-bbdd-11e7-82a2-b6e28f4b2fd7.gif)
 
-To start your Phoenix server:
+Sir Alex is a group management platform, built on top of [Elixir](https://github.com/elixir-lang/elixir) and [Phoenix](https://github.com/phoenix-framework/phoenix). For more information on what this is going to be, check out [my essay on Sir Alex](https://dennisbeatty.com/2017/10/20/sir-alex-open-source-group-management-platform.html).
 
-  * Install dependencies with `mix deps.get`
-  * Create and migrate your database with `mix ecto.create && mix ecto.migrate`
-  * Install Node.js dependencies with `cd assets && npm install`
-  * Start Phoenix endpoint with `mix phx.server`
+## Running the server
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+1. Make sure you have [Elixir 1.5 and OTP 20 installed](https://elixir-lang.org/install.html)
+2. Make sure you have Postgres installed and running.
+2. Clone the repo onto your local machine: `git clone git@github.com:dnsbty/sir_alex.git`
+3. Install the project's dependencies: `cd sir_alex && mix deps.get`
+4. Create and migrate the database: `mix ecto.create && mix ecto.migrate`
+5. Install node.js dependencies: `cd assets && npm install`
+6. Start the server: `mix phx.server`
 
-Ready to run in production? Please [check our deployment guides](http://www.phoenixframework.org/docs/deployment).
-
-## Learn more
-
-  * Official website: http://www.phoenixframework.org/
-  * Guides: http://phoenixframework.org/docs/overview
-  * Docs: https://hexdocs.pm/phoenix
-  * Mailing list: http://groups.google.com/group/phoenix-talk
-  * Source: https://github.com/phoenixframework/phoenix
+Now you can visit [http://localhost:4000](http://localhost:4000) in your browser.
