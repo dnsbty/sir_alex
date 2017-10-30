@@ -42,6 +42,6 @@ defmodule SirAlexWeb.UserController do
 
     conn
     |> put_flash(:info, "User deleted successfully.")
-    |> redirect(to: user_path(conn, :index))
+    |> redirect(to: page_path(conn, :index))
   end
 end

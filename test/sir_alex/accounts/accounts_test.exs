@@ -6,8 +6,8 @@ defmodule SirAlex.AccountsTest do
   describe "users" do
     alias SirAlex.Accounts.User
 
-    @valid_attrs %{email: "some email", facebook_id: "some facebook_id", last_login: ~N[2010-04-17 14:00:00.000000], name: "some name"}
-    @update_attrs %{email: "some updated email", facebook_id: "some updated facebook_id", last_login: ~N[2011-05-18 15:01:01.000000], name: "some updated name"}
+    @valid_attrs %{email: "some email", facebook_id: "some facebook_id", name: "some name"}
+    @update_attrs %{email: "some updated email", facebook_id: "some updated facebook_id", name: "some updated name"}
     @invalid_attrs %{email: nil, facebook_id: nil, last_login: nil, name: nil}
 
     def user_fixture(attrs \\ %{}) do
@@ -33,7 +33,6 @@ defmodule SirAlex.AccountsTest do
       assert {:ok, %User{} = user} = Accounts.create_user(@valid_attrs)
       assert user.email == "some email"
       assert user.facebook_id == "some facebook_id"
-      assert user.last_login == ~N[2010-04-17 14:00:00.000000]
       assert user.name == "some name"
     end
 
@@ -47,7 +46,6 @@ defmodule SirAlex.AccountsTest do
       assert %User{} = user
       assert user.email == "some updated email"
       assert user.facebook_id == "some updated facebook_id"
-      assert user.last_login == ~N[2011-05-18 15:01:01.000000]
       assert user.name == "some updated name"
     end
 
