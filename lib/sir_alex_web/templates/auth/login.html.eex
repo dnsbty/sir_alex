@@ -1,0 +1,5 @@
+<h2>Log In</h2>
+
+<%= link("Log In with Facebook", to: "/auth/facebook", class: "btn btn-primary") %>
+
+<span><%= link "Back", to: "/" %></span>
