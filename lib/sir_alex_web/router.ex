@@ -16,11 +16,15 @@ defmodule SirAlexWeb.Router do
   scope "/", SirAlexWeb do
     pipe_through :browser # Use the default browser stack
 
+    resources "/users", UserController, only: [:new, :show]
     get "/", PageController, :index
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", SirAlexWeb do
-  #   pipe_through :api
-  # end
+  scope "/auth", SirAlexWeb do
+    pipe_through :browser
+
+    get "/login", AuthController, :login
+    get "/:provider", AuthController, :request
+    get "/:provider/callback", AuthController, :callback
+  end
 end

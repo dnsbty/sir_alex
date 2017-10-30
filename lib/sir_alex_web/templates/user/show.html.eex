@@ -1,0 +1,22 @@
+<h2>Show User</h2>
+
+<ul>
+
+  <li>
+    <strong>Name:</strong>
+    <%= @user.name %>
+  </li>
+
+  <li>
+    <strong>Email:</strong>
+    <%= @user.email %>
+  </li>
+
+  <li>
+    <strong>Facebook ID:</strong>
+    <%= @user.facebook_id %>
+  </li>
+
+</ul>
+]
+<span><%= link "Back", to: page_path(@conn, :index) %></span>

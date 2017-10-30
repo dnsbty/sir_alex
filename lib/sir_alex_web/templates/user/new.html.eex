@@ -1,0 +1,5 @@
+<h2>Create Account</h2>
+
+<%= link("Continue with Facebook", to: "/auth/facebook", class: "btn btn-primary") %>
+
+<span><%= link "Back", to: page_path(@conn, :index) %></span>
