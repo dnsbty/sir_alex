@@ -21,4 +21,11 @@ defmodule SirAlexWeb.AuthController do
   def login(conn, _params) do
     render(conn, "login.html")
   end
+
+  def logout(conn, _params) do
+    conn
+    |> delete_session(:current_user)
+    |> put_flash(:info, "Successfully logged out.")
+    |> redirect(to: "/")
+  end
 end

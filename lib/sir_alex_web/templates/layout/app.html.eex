@@ -16,8 +16,13 @@
       <header class="header">
         <nav role="navigation">
           <ul class="nav nav-pills pull-right">
+            <%= if @is_logged_in do %>
+            <li><%= link("Create Group", to: "/groups/new")%></li>
+            <li><%= link("Log Out", to: "/auth/logout")%></li>
+            <% else %>
             <li><%= link("Create Account", to: "/users/new")%></li>
             <li><%= link("Log In", to: "/auth/login")%></li>
+            <% end %>
           </ul>
         </nav>
         <h1>Sir Alex</h1>
