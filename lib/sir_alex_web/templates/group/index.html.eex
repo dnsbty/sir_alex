@@ -1,0 +1,30 @@
+<h2>Listing Groups</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Is private</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for group <- @groups do %>
+    <tr>
+      <td><%= group.name %></td>
+      <td><%= group.description %></td>
+      <td><%= group.is_private %></td>
+
+      <td class="text-right">
+        <span><%= link "Show", to: group_path(@conn, :show, group), class: "btn btn-default btn-xs" %></span>
+        <span><%= link "Edit", to: group_path(@conn, :edit, group), class: "btn btn-default btn-xs" %></span>
+        <span><%= link "Delete", to: group_path(@conn, :delete, group), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %></span>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<span><%= link "New Group", to: group_path(@conn, :new) %></span>
