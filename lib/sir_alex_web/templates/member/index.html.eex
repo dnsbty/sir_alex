@@ -1,0 +1,28 @@
+<h2>Listing Members</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Accepted at</th>
+      <th>Removed at</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for member <- @members do %>
+    <tr>
+      <td><%= member.accepted_at %></td>
+      <td><%= member.removed_at %></td>
+
+      <td class="text-right">
+        <span><%= link "Show", to: member_path(@conn, :show, @group, member), class: "btn btn-default btn-xs" %></span>
+        <span><%= link "Edit", to: member_path(@conn, :edit, @group, member), class: "btn btn-default btn-xs" %></span>
+        <span><%= link "Delete", to: member_path(@conn, :delete, @group, member), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %></span>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<span><%= link "New Member", to: member_path(@conn, :new, @group) %></span>
