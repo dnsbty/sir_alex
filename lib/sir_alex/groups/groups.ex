@@ -194,8 +194,9 @@ defmodule SirAlex.Groups do
 
   """
   def add_member(group, user) do
+    epoch = @epoch
     accepted_at = case group.is_private? do
-      true -> ~N[1970-01-01 00:00:00]
+      true -> epoch
       _ -> NaiveDateTime.utc_now()
     end
 
@@ -207,7 +208,7 @@ defmodule SirAlex.Groups do
 
     %Member{}
     |> Member.changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert(conflict_target: [:group_id, :user_id], on_conflict: [set: [removed_at: epoch]])
   end
 
   @doc """
