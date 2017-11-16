@@ -5,17 +5,17 @@ defmodule SirAlex.Groups.Group do
 
   @attrs [
     :description,
-    :is_private,
+    :is_private?,
     :name
   ]
 
   @required_attrs @attrs -- [
-    :is_private
+    :is_private?
   ]
 
   schema "groups" do
     field :description, :string
-    field :is_private, :boolean, default: false
+    field :is_private?, :boolean, default: false
     field :name, :string
 
     timestamps()

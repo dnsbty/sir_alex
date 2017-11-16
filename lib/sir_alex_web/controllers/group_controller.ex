@@ -4,6 +4,10 @@ defmodule SirAlexWeb.GroupController do
   alias SirAlex.Groups
   alias SirAlex.Groups.Group
 
+  plug :get_group when action in [:show, :edit, :update, :delete]
+  plug :requires_group_admin when action in [:edit, :update, :delete]
+  action_fallback SirAlexWeb.FallbackController
+
   def index(conn, _params) do
     groups = Groups.list_groups()
     render(conn, "index.html", groups: groups)
@@ -56,5 +60,26 @@ defmodule SirAlexWeb.GroupController do
     conn
     |> put_flash(:info, "Group deleted successfully.")
     |> redirect(to: group_path(conn, :index))
+  end
+
+  defp get_group(%{assigns: %{current_user: user}, params: %{"id" => group_id}} = conn, _) do
+    with {:ok, group} <- Groups.get_group_and_membership(group_id, user.id) do
+      conn
+      |> assign(:group, group.group)
+      |> assign(:is_member?, group.is_member?)
+      |> assign(:is_admin?, group.is_admin?)
+    else
+      error ->
+        conn
+        |> SirAlexWeb.FallbackController.call(error)
+        |> halt()
+    end
+  end
+
+  defp requires_group_admin(%{assigns: %{is_admin?: true}} = conn, _), do: conn
+  defp requires_group_admin(%{assigns: %{is_admin?: false, group: group}} = conn, _) do
+    conn
+    |> put_flash(:error, "You must be an admin of the group to do that")
+    |> redirect(to: group_path(:show, group))
   end
 end

@@ -8,7 +8,7 @@ defmodule SirAlexWeb.MemberControllerTest do
 
   @group_attrs %{
     description: "some description",
-    is_private: false,
+    is_private?: false,
     name: "some name"
   }
   @user_attrs %{
@@ -72,20 +72,14 @@ defmodule SirAlexWeb.MemberControllerTest do
   describe "create member" do
     setup [:create_group, :create_user]
 
-    test "redirects to show when data is valid", %{conn: conn, group_id: group_id, user_id: user_id} do
-      member_attrs = Map.merge(@create_attrs, %{group_id: group_id, user_id: user_id})
-      conn = post conn, member_path(conn, :create, group_id), member: member_attrs
+    test "redirects to show group when data is valid", %{conn: conn, group_id: group_id, user: user} do
+      member_attrs = Map.merge(@create_attrs, %{group_id: group_id, user_id: user.id})
+      conn =
+        conn
+        |> authenticate_user(user)
+        |> post(member_path(conn, :create, group_id), member: member_attrs)
 
-      assert %{id: member_id} = redirected_params(conn)
-      assert redirected_to(conn) == member_path(conn, :show, group_id, member_id)
-
-      conn = get conn, member_path(conn, :show, group_id, member_id)
-      assert html_response(conn, 200) =~ "Show Member"
-    end
-
-    test "renders errors when data is invalid", %{conn: conn, group_id: group_id} do
-      conn = post conn, member_path(conn, :create, group_id), member: @invalid_attrs
-      assert html_response(conn, 200) =~ "New Member"
+      assert redirected_to(conn) == group_path(conn, :show, group_id)
     end
   end
 
@@ -136,7 +130,7 @@ defmodule SirAlexWeb.MemberControllerTest do
   end
   defp create_user(_) do
     user = fixture(:user)
-    {:ok, user_id: user.id}
+    {:ok, user: user}
   end
   defp create_member(_) do
     member = fixture(:member)

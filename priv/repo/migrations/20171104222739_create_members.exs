@@ -2,7 +2,7 @@ defmodule SirAlex.Repo.Migrations.CreateMembers do
   use Ecto.Migration
 
   def change do
-    create table(:members) do
+    create table(:members, primary_key: false) do
       add :group_id, references(:groups, on_delete: :nothing), primary_key: true
       add :user_id, references(:users, on_delete: :nothing), primary_key: true
       add :role, :string, null: false, default: "member"

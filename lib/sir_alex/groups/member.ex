@@ -20,6 +20,8 @@ defmodule SirAlex.Groups.Member do
     :user_id
   ]
 
+  @primary_key false
+
   schema "members" do
     field :accepted_at, :naive_datetime, default: ~N[1970-01-01 00:00:00]
     field :removed_at, :naive_datetime, default: ~N[1970-01-01 00:00:00]
@@ -36,6 +38,7 @@ defmodule SirAlex.Groups.Member do
     member
     |> cast(attrs, @attrs)
     |> validate_required(@required_attrs)
+    |> unique_constraint(:group_id, name: :members_pkey)
     |> foreign_key_constraint(:group_id)
     |> foreign_key_constraint(:user_id)
   end

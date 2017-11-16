@@ -20,6 +20,7 @@ defmodule SirAlexWeb.ConnCase do
       # Import conveniences for testing with connections
       use Phoenix.ConnTest
       import SirAlexWeb.Router.Helpers
+      import SirAlexWeb.AuthHelper
 
       # The default endpoint for testing
       @endpoint SirAlexWeb.Endpoint

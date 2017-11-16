@@ -3,9 +3,9 @@ defmodule SirAlexWeb.GroupControllerTest do
 
   alias SirAlex.Groups
 
-  @create_attrs %{description: "some description", is_private: true, name: "some name"}
-  @update_attrs %{description: "some updated description", is_private: false, name: "some updated name"}
-  @invalid_attrs %{description: nil, is_private: nil, name: nil}
+  @create_attrs %{description: "some description", is_private?: true, name: "some name"}
+  @update_attrs %{description: "some updated description", is_private?: false, name: "some updated name"}
+  @invalid_attrs %{description: nil, is_private?: nil, name: nil}
 
   def fixture(:group) do
     {:ok, group} = Groups.create_group(@create_attrs)

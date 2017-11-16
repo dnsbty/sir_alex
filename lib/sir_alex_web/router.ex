@@ -18,7 +18,8 @@ defmodule SirAlexWeb.Router do
   scope "/", SirAlexWeb do
     pipe_through :browser # Use the default browser stack
 
-    resources "/groups/:group_id/members", MemberController
+    resources "/groups/:group_id/members", MemberController, except: [:delete]
+    delete "/groups/:group_id/members", MemberController, :delete
     resources "/groups", GroupController
     resources "/users", UserController, only: [:new, :show]
     get "/", PageController, :index

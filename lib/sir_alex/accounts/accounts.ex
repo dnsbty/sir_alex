@@ -74,9 +74,10 @@ defmodule SirAlex.Accounts do
       facebook_id: facebook_id,
       name: name
     }
+    query = from u in User, update: [set: [name: fragment("EXCLUDED.name")]]
     %User{}
     |> User.changeset(attrs)
-    |> Repo.insert(on_conflict: :nothing, returning: true)
+    |> Repo.insert(conflict_target: :facebook_id, on_conflict: query, returning: true)
   end
 
   @doc """

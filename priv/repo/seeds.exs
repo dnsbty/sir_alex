@@ -26,13 +26,13 @@ user = Repo.insert!(%User{
 public_group = Repo.insert!(%Group{
   name: "A Public Group",
   description: "This will be a super awesome public group.",
-  is_private: false
+  is_private?: false
 })
 
 private_group = Repo.insert!(%Group{
   name: "A Private Group",
   description: "This will be a super awesome private group.",
-  is_private: true
+  is_private?: true
 })
 
 Repo.insert!(%Member{

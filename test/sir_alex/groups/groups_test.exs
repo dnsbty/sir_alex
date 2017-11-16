@@ -11,9 +11,9 @@ defmodule SirAlex.GroupsTest do
   }
 
   describe "groups" do
-    @valid_attrs %{description: "some description", is_private: true, name: "some name"}
-    @update_attrs %{description: "some updated description", is_private: false, name: "some updated name"}
-    @invalid_attrs %{description: nil, is_private: nil, name: nil}
+    @valid_attrs %{description: "some description", is_private?: true, name: "some name"}
+    @update_attrs %{description: "some updated description", is_private?: false, name: "some updated name"}
+    @invalid_attrs %{description: nil, is_private?: nil, name: nil}
 
     def group_fixture(attrs \\ %{}) do
       {:ok, group} =
@@ -37,7 +37,7 @@ defmodule SirAlex.GroupsTest do
     test "create_group/1 with valid data creates a group" do
       assert {:ok, %Group{} = group} = Groups.create_group(@valid_attrs)
       assert group.description == "some description"
-      assert group.is_private == true
+      assert group.is_private? == true
       assert group.name == "some name"
     end
 
@@ -50,7 +50,7 @@ defmodule SirAlex.GroupsTest do
       assert {:ok, group} = Groups.update_group(group, @update_attrs)
       assert %Group{} = group
       assert group.description == "some updated description"
-      assert group.is_private == false
+      assert group.is_private? == false
       assert group.name == "some updated name"
     end
 

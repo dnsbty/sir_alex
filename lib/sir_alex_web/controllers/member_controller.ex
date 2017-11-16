@@ -1,5 +1,6 @@
 defmodule SirAlexWeb.MemberController do
   use SirAlexWeb, :controller
+  import SirAlexWeb.Plugs.RequireLogin, only: [require_login: 2]
 
   alias Plug.Conn
   alias SirAlex.Groups
@@ -9,6 +10,9 @@ defmodule SirAlexWeb.MemberController do
   }
 
   plug :get_group when not action in [:update]
+  plug :require_login when action in [:create]
+
+  action_fallback SirAlexWeb.FallbackController
 
   def index(conn, _params) do
     members = Groups.list_members()
@@ -20,14 +24,11 @@ defmodule SirAlexWeb.MemberController do
     render(conn, "new.html", changeset: changeset)
   end
 
-  def create(conn, %{"member" => member_params}) do
-    case Groups.create_member(member_params) do
-      {:ok, member} ->
-        conn
-        |> put_flash(:info, "Member created successfully.")
-        |> redirect(to: member_path(conn, :show, member.group_id, member))
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "new.html", changeset: changeset)
+  def create(%{assigns: %{current_user: user, group: group}} = conn, _) do
+    with {:ok, member} <- Groups.add_member(group, user) do
+      conn
+      |> put_flash(:info, "You succesfully joined #{group.name}!")
+      |> redirect(to: group_path(conn, :show, member.group_id))
     end
   end
 
@@ -55,13 +56,13 @@ defmodule SirAlexWeb.MemberController do
     end
   end
 
-  def delete(conn, %{"id" => id}) do
-    member = Groups.get_member!(id)
-    {:ok, _member} = Groups.delete_member(member)
-
-    conn
-    |> put_flash(:info, "Member deleted successfully.")
-    |> redirect(to: member_path(conn, :index, conn.assigns.group.id))
+  def delete(%{assigns: %{current_user: user, group: group}} = conn, _) do
+    IO.puts("deleting...")
+    with {1, nil} <- Groups.remove_member(group.id, user.id) do
+      conn
+      |> put_flash(:info, "Successfully left the group.")
+      |> redirect(to: group_path(conn, :show, group.id))
+    end
   end
 
   defp get_group(%{params: %{"group_id" => group_id}} = conn, _) do

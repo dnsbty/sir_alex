@@ -6,7 +6,12 @@ defmodule SirAlex.Groups do
   import Ecto.Query, warn: false
   alias SirAlex.Repo
 
-  alias SirAlex.Groups.Group
+  alias SirAlex.Groups.{
+    Group,
+    Member
+  }
+
+  @epoch ~N[1970-01-01 00:00:00]
 
   @doc """
   Returns the list of groups.
@@ -34,6 +39,37 @@ defmodule SirAlex.Groups do
 
   """
   def get_group(id), do: Repo.get(Group, id)
+
+  @doc """
+  Gets a single group and a user's membership relationship with it.
+
+  ## Examples
+
+      iex> get_group_and_membership(123, 456)
+      {:ok, %{group: %Group{}, is_member?: true, is_admin?: false}}
+
+      iex> get_group_and_membership(456, 789)
+      {:error, Ecto.NoResultsError{})
+
+  """
+  def get_group_and_membership(group_id, user_id) do
+    epoch = @epoch
+    query =
+      from g in Group,
+        left_join: m in Member,
+          on: g.id == m.group_id,
+          on: m.user_id == ^user_id,
+          on: m.removed_at == ^epoch,
+        where: g.id == ^group_id,
+        select: {g, m.role}
+
+    case Repo.one(query) do
+      {group, nil} -> {:ok, %{group: group, is_member?: false, is_admin?: false}}
+      {group, "member"} -> {:ok, %{group: group, is_member?: true, is_admin?: false}}
+      {group, "admin"} -> {:ok, %{group: group, is_member?: true, is_admin?: true}}
+      _ -> {:error, %Ecto.NoResultsError{message: "Group not found"}}
+    end
+  end
 
   @doc """
   Gets a single group.
@@ -116,8 +152,6 @@ defmodule SirAlex.Groups do
     Group.changeset(group, %{})
   end
 
-  alias SirAlex.Groups.Member
-
   @doc """
   Returns the list of members.
 
@@ -146,6 +180,35 @@ defmodule SirAlex.Groups do
 
   """
   def get_member!(id), do: Repo.get!(Member, id)
+
+  @doc """
+  Adds a user as a member of a group.
+
+  ## Examples
+
+      iex> add_member(%Group{}, %User{})
+      {:ok, %Member{}}
+
+      iex> add_member(nil, nil)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def add_member(group, user) do
+    accepted_at = case group.is_private? do
+      true -> ~N[1970-01-01 00:00:00]
+      _ -> NaiveDateTime.utc_now()
+    end
+
+    attrs = %{
+      group_id: group.id,
+      user_id: user.id,
+      accepted_at: accepted_at
+    }
+
+    %Member{}
+    |> Member.changeset(attrs)
+    |> Repo.insert()
+  end
 
   @doc """
   Creates a member.
@@ -200,6 +263,29 @@ defmodule SirAlex.Groups do
   end
 
   @doc """
+  Removes a Member from a Group.
+
+  ## Examples
+
+      iex> remove_member(member)
+      {:ok, %Member{}}
+
+      iex> remove_member(member)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def remove_member(group_id, user_id) do
+    epoch = @epoch
+    query =
+      from m in Member,
+        where: m.group_id == ^group_id,
+        where: m.user_id == ^user_id,
+        where: m.removed_at == ^epoch,
+        update: [set: [removed_at: ^NaiveDateTime.utc_now()]]
+    Repo.update_all(query, []) |> IO.inspect
+  end
+
+  @doc """
   Returns an `%Ecto.Changeset{}` for tracking member changes.
 
   ## Examples
@@ -210,5 +296,28 @@ defmodule SirAlex.Groups do
   """
   def change_member(%Member{} = member) do
     Member.changeset(member, %{})
+  end
+
+  @doc """
+  Returns a list of groups to which a user belongs.
+
+  ## Examples
+
+    iex> list_user_groups(123)
+    [%Group{}]
+
+    iex> list_user_groups(456)
+    []
+  """
+  def list_user_groups(user_id) do
+    epoch = @epoch
+    query =
+      from g in Group,
+        join: m in Member, on: g.id == m.group_id,
+        select: {g.id, g.name, m.role},
+        where: m.user_id == ^user_id,
+        where: m.accepted_at != ^epoch,
+        where: m.removed_at == ^epoch
+    Repo.all(query) |> IO.inspect
   end
 end
