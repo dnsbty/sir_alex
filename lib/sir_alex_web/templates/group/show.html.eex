@@ -12,12 +12,7 @@
     <%= @group.description %>
   </li>
 
-  <%= if !@is_member? && !@group.is_private? do %>
-  <%= link "Join Group", to: member_path(@conn, :create, @group), method: :post, class: "btn btn-primary" %>
-  <% end %>
-  <%= if @is_member? do %>
-  <%= link "Leave Group", to: member_path(@conn, :delete, @group), method: :delete, class: "btn btn-secondary" %>
-  <% end %>
+  <%= action_button(@conn, @group, @is_member?) %>
 
 </ul>
 
