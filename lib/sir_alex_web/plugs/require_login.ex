@@ -6,6 +6,7 @@ defmodule SirAlexWeb.Plugs.RequireLogin do
       true -> conn
       _ ->
         conn
+        |> put_flash(:info, "You need to log in before you can do that")
         |> redirect(to: auth_path(conn, :login))
         |> halt()
     end

@@ -1,10 +1,12 @@
 defmodule SirAlexWeb.GroupController do
   use SirAlexWeb, :controller
+  import SirAlexWeb.Plugs.RequireLogin, only: [require_login: 2]
 
   alias SirAlex.Groups
   alias SirAlex.Groups.Group
 
   plug :get_group when action in [:show, :edit, :update, :delete]
+  plug :require_login when action in [:new, :create]
   plug :requires_group_admin when action in [:edit, :update, :delete]
   action_fallback SirAlexWeb.FallbackController
 
@@ -18,8 +20,8 @@ defmodule SirAlexWeb.GroupController do
     render(conn, "new.html", changeset: changeset)
   end
 
-  def create(conn, %{"group" => group_params}) do
-    case Groups.create_group(group_params) do
+  def create(%{assigns: %{current_user: user}} = conn, %{"group" => group_params}) do
+    case Groups.create_group_and_admin(group_params, user) do
       {:ok, group} ->
         conn
         |> put_flash(:info, "Group created successfully.")
@@ -80,6 +82,7 @@ defmodule SirAlexWeb.GroupController do
   defp requires_group_admin(%{assigns: %{is_admin?: false, group: group}} = conn, _) do
     conn
     |> put_flash(:error, "You must be an admin of the group to do that")
-    |> redirect(to: group_path(:show, group))
+    |> redirect(to: group_path(conn, :show, group))
+    |> halt()
   end
 end

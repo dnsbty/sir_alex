@@ -88,6 +88,25 @@ defmodule SirAlex.Groups do
   def get_group!(id), do: Repo.get!(Group, id)
 
   @doc """
+  Creates a group and makes the user an admin.
+
+  ## Examples
+
+      iex> create_group_and_admin(%{field: value}, %User{})
+      {:ok, %Group{}}
+
+      iex> create_group(%{field: bad_value}, %User{})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_group_and_admin(attrs, admin) do
+    with {:ok, group} <- create_group(attrs) |> IO.inspect(label: "group creation"),
+      {:ok, _} <- add_admin(group, admin) |> IO.inspect(label: "admin adding") do
+        {:ok, group}
+    end
+  end
+
+  @doc """
   Creates a group.
 
   ## Examples
@@ -182,6 +201,29 @@ defmodule SirAlex.Groups do
   def get_member!(id), do: Repo.get!(Member, id)
 
   @doc """
+  Adds a user as an admin of a group.
+
+  ## Examples
+
+      iex> add_admin(%Group{}, %User{})
+      {:ok, %Member{}}
+
+      iex> add_admin(nil, nil)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def add_admin(%{id: group_id} = group, %{id: user_id}) do
+    attrs = %{
+      group_id: group_id,
+      user_id: user_id,
+      accepted_at: accepted_at(group),
+      role: "admin"
+    }
+
+    create_member(attrs)
+  end
+
+  @doc """
   Adds a user as a member of a group.
 
   ## Examples
@@ -193,23 +235,19 @@ defmodule SirAlex.Groups do
       {:error, %Ecto.Changeset{}}
 
   """
-  def add_member(group, user) do
-    epoch = @epoch
-    accepted_at = case group.is_private? do
-      true -> epoch
-      _ -> NaiveDateTime.utc_now()
-    end
-
+  def add_member(%{id: group_id} = group, %{id: user_id}) do
     attrs = %{
-      group_id: group.id,
-      user_id: user.id,
-      accepted_at: accepted_at
+      group_id: group_id,
+      user_id: user_id,
+      accepted_at: accepted_at(group),
+      role: "member"
     }
 
-    %Member{}
-    |> Member.changeset(attrs)
-    |> Repo.insert(conflict_target: [:group_id, :user_id], on_conflict: [set: [removed_at: epoch]])
+    create_member(attrs)
   end
+
+  defp accepted_at(%Group{is_private?: true}), do: @epoch
+  defp accepted_at(_), do: NaiveDateTime.utc_now()
 
   @doc """
   Creates a member.
@@ -224,9 +262,15 @@ defmodule SirAlex.Groups do
 
   """
   def create_member(attrs \\ %{}) do
+    epoch = @epoch
+    insert_options = [
+      conflict_target: [:group_id, :user_id],
+      on_conflict: [set: [removed_at: epoch]]
+    ]
+
     %Member{}
     |> Member.changeset(attrs)
-    |> Repo.insert()
+    |> Repo.insert(insert_options)
   end
 
   @doc """
