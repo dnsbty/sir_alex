@@ -31,20 +31,16 @@ defmodule SirAlexWeb.GroupController do
     end
   end
 
-  def show(conn, %{"id" => id}) do
-    group = Groups.get_group!(id)
-    render(conn, "show.html", group: group)
+  def show(conn, _params) do
+    render(conn, "show.html")
   end
 
-  def edit(conn, %{"id" => id}) do
-    group = Groups.get_group!(id)
+  def edit(%{assigns: %{group: group}} = conn, _params) do
     changeset = Groups.change_group(group)
-    render(conn, "edit.html", group: group, changeset: changeset)
+    render(conn, "edit.html", changeset: changeset)
   end
 
-  def update(conn, %{"id" => id, "group" => group_params}) do
-    group = Groups.get_group!(id)
-
+  def update(%{assigns: %{group: group}} = conn, %{"group" => group_params}) do
     case Groups.update_group(group, group_params) do
       {:ok, group} ->
         conn
@@ -55,8 +51,7 @@ defmodule SirAlexWeb.GroupController do
     end
   end
 
-  def delete(conn, %{"id" => id}) do
-    group = Groups.get_group!(id)
+  def delete(%{assigns: %{group: group}} = conn, _params) do
     {:ok, _group} = Groups.delete_group(group)
 
     conn

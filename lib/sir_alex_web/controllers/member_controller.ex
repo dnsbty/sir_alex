@@ -2,10 +2,8 @@ defmodule SirAlexWeb.MemberController do
   use SirAlexWeb, :controller
   import SirAlexWeb.Plugs.RequireLogin, only: [require_login: 2]
 
-  alias Plug.Conn
   alias SirAlex.Groups
   alias SirAlex.Groups.{
-    Group,
     Member
   }
 
@@ -14,8 +12,8 @@ defmodule SirAlexWeb.MemberController do
 
   action_fallback SirAlexWeb.FallbackController
 
-  def index(conn, _params) do
-    members = Groups.list_members()
+  def index(%{assigns: %{group: group}} = conn, _params) do
+    members = Groups.list_members(group.id)
     render(conn, "index.html", members: members)
   end
 
@@ -56,8 +54,7 @@ defmodule SirAlexWeb.MemberController do
     end
   end
 
-  def delete(%{assigns: %{current_user: user, group: group}} = conn, _) do
-    IO.puts("deleting...")
+  def leave(%{assigns: %{current_user: user, group: group}} = conn, _) do
     with {1, nil} <- Groups.remove_member(group.id, user.id) do
       conn
       |> put_flash(:info, "Successfully left the group.")
@@ -65,9 +62,25 @@ defmodule SirAlexWeb.MemberController do
     end
   end
 
-  defp get_group(%{params: %{"group_id" => group_id}} = conn, _) do
-    with %Group{} = group <- Groups.get_group(group_id) do
-      Conn.assign(conn, :group, group)
+  def delete(%{assigns: %{group: group}} = conn, %{"user_id" => user_id}) do
+    with {1, nil} <- Groups.remove_member(group.id, user_id) do
+      conn
+      |> put_flash(:info, "Successfully removed that user from the group.")
+      |> redirect(to: member_path(conn, :index, group))
+    end
+  end
+
+  defp get_group(%{assigns: %{current_user: user}, params: %{"group_id" => group_id}} = conn, _) do
+    with {:ok, group} <- Groups.get_group_and_membership(group_id, user.id) do
+      conn
+      |> assign(:group, group.group)
+      |> assign(:is_member?, group.is_member?)
+      |> assign(:is_admin?, group.is_admin?)
+    else
+      error ->
+        conn
+        |> SirAlexWeb.FallbackController.call(error)
+        |> halt()
     end
   end
 end

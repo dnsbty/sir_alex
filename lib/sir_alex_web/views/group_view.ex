@@ -10,7 +10,7 @@ defmodule SirAlexWeb.GroupView do
   end
   def action_button(conn, group, true) do
     options = [
-      to: member_path(conn, :delete, group),
+      to: member_path(conn, :leave, group),
       method: :delete,
       class: "btn btn-secondary"
     ]

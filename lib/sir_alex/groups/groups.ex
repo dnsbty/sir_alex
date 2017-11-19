@@ -60,17 +60,28 @@ defmodule SirAlex.Groups do
         left_join: m in Member,
           on: g.id == m.group_id,
           on: m.user_id == ^user_id,
+          on: m.accepted_at != ^epoch,
           on: m.removed_at == ^epoch,
+        left_join: c in Member,
+          on: g.id == c.group_id,
+          on: m.removed_at == ^epoch,
+          on: m.accepted_at != ^epoch,
         where: g.id == ^group_id,
-        select: {g, m.role}
+        group_by: [g.id, m.role],
+        select: {g, count(c.user_id), m.role}
 
-    case Repo.one(query) do
-      {group, nil} -> {:ok, %{group: group, is_member?: false, is_admin?: false}}
-      {group, "member"} -> {:ok, %{group: group, is_member?: true, is_admin?: false}}
-      {group, "admin"} -> {:ok, %{group: group, is_member?: true, is_admin?: true}}
+    with {group, member_count, role} <- Repo.one(query) |> IO.inspect do
+      group = Kernel.struct(group, member_count: member_count)
+      role_map = get_role_info(role)
+      {:ok, Map.merge(%{group: group}, role_map)}
+    else
       _ -> {:error, %Ecto.NoResultsError{message: "Group not found"}}
     end
   end
+
+  defp get_role_info(nil), do: %{is_member?: false, is_admin?: false}
+  defp get_role_info("member"), do: %{is_member?: true, is_admin?: false}
+  defp get_role_info("admin"), do: %{is_member?: true, is_admin?: true}
 
   @doc """
   Gets a single group.
@@ -177,12 +188,19 @@ defmodule SirAlex.Groups do
 
   ## Examples
 
-      iex> list_members()
+      iex> list_members(123)
       [%Member{}, ...]
 
   """
-  def list_members do
-    Repo.all(Member)
+  def list_members(group_id) do
+    query =
+      from m in Member,
+        join: u in assoc(m, :user),
+        preload: [user: u],
+        where: m.group_id == ^group_id,
+        order_by: u.name
+        
+    Repo.all(query)
   end
 
   @doc """

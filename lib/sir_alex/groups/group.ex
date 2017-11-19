@@ -17,6 +17,7 @@ defmodule SirAlex.Groups.Group do
     field :description, :string
     field :is_private?, :boolean, default: false
     field :name, :string
+    field :member_count, :integer, virtual: true
 
     timestamps()
   end

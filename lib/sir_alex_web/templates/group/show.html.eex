@@ -12,6 +12,11 @@
     <%= @group.description %>
   </li>
 
+  <li>
+    <strong>Members:</strong>
+    <%= link @group.member_count, to: member_path(@conn, :index, @group) %>
+  </li>
+
   <%= action_button(@conn, @group, @is_member?) %>
 
 </ul>
