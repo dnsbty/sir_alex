@@ -1,0 +1,25 @@
+<h2>Member Requests</h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Requested</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+<%= for request <- @requests do %>
+    <tr>
+      <td><%= request.name %></td>
+      <td><%= request.requested_at %></td>
+      <td class="text-right">
+        <span><%= link "Accept", to: member_request_path(@conn, :accept, request.group_id, request.id), method: :put, class: "btn btn-primary btn-xs" %></span>
+        <span><%= link "Reject", to: member_request_path(@conn, :reject, request.group_id, request.id), method: :put, class: "btn btn-danger btn-xs" %></span>
+      </td>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<span><%= link "New Group", to: group_path(@conn, :new) %></span>

@@ -20,6 +20,9 @@ defmodule SirAlexWeb.Router do
 
     resources "/groups/:group_id/members", MemberController, except: [:delete]
     delete "/groups/:group_id/members", MemberController, :delete
+    get "/groups/:group_id/requests", MemberRequestController, :index
+    put "/groups/:group_id/requests/:member_id/accept", MemberRequestController, :accept
+    put "/groups/:group_id/requests/:member_id/reject", MemberRequestController, :reject
     resources "/groups", GroupController
     resources "/users", UserController, only: [:new, :show]
     get "/", PageController, :index

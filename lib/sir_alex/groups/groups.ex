@@ -6,6 +6,7 @@ defmodule SirAlex.Groups do
   import Ecto.Query, warn: false
   alias SirAlex.Repo
 
+  alias SirAlex.Accounts.User
   alias SirAlex.Groups.{
     Group,
     Member
@@ -363,6 +364,73 @@ defmodule SirAlex.Groups do
         where: m.user_id == ^user_id,
         where: m.accepted_at != ^epoch,
         where: m.removed_at == ^epoch
-    Repo.all(query) |> IO.inspect
+    Repo.all(query)
+  end
+
+  @doc """
+  Returns a list of users who have requested to join a group.
+
+  ## Examples
+
+    iex> list_member_requests(123)
+    [%{}]
+
+    iex> list_member_requests(456)
+    []
+  """
+  def list_member_requests(group_id) do
+    epoch = @epoch
+    query =
+      from m in Member,
+        join: u in User, on: u.id == m.user_id,
+        select: %{id: u.id, group_id: m.group_id, name: u.name, requested_at: m.inserted_at},
+        where: m.group_id == ^group_id,
+        where: m.accepted_at == ^epoch,
+        where: m.removed_at == ^epoch
+    Repo.all(query)
+  end
+
+  @doc """
+  Accepts a membership request.
+
+  ## Examples
+
+    iex> accept_member_request(123, 456)
+    {:ok, %Member{}}
+
+    iex> list_member_requests(456)
+    {:error, %Ecto.Changeset{}}
+  """
+  def accept_member_request(group_id, user_id) do
+    epoch = @epoch
+    query =
+      from m in Member,
+        where: m.group_id == ^group_id,
+        where: m.user_id == ^user_id,
+        where: m.accepted_at == ^epoch,
+        where: m.removed_at == ^epoch
+    Repo.update_all(query, set: [accepted_at: NaiveDateTime.utc_now()])
+  end
+
+  @doc """
+  Rejects a membership request.
+
+  ## Examples
+
+    iex> reject_member_request(123, 456)
+    {1, nil}
+
+    iex> reject_member_request(456, 789)
+    {0, nil}
+  """
+  def reject_member_request(group_id, user_id) do
+    epoch = @epoch
+    query =
+      from m in Member,
+        where: m.group_id == ^group_id,
+        where: m.user_id == ^user_id,
+        where: m.accepted_at == ^epoch,
+        where: m.removed_at == ^epoch
+    Repo.update_all(query, set: [removed_at: NaiveDateTime.utc_now()])
   end
 end
