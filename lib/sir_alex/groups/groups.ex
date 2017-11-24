@@ -12,7 +12,7 @@ defmodule SirAlex.Groups do
     Member
   }
 
-  @epoch ~N[1970-01-01 00:00:00]
+  @epoch ~N[1970-01-01 00:00:00.000000]
 
   @doc """
   Returns the list of groups.

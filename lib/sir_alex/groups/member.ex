@@ -21,10 +21,11 @@ defmodule SirAlex.Groups.Member do
   ]
 
   @primary_key false
+  @epoch ~N[1970-01-01 00:00:00.000000]
 
   schema "members" do
-    field :accepted_at, :naive_datetime, default: ~N[1970-01-01 00:00:00]
-    field :removed_at, :naive_datetime, default: ~N[1970-01-01 00:00:00]
+    field :accepted_at, :naive_datetime, default: @epoch
+    field :removed_at, :naive_datetime, default: @epoch
     field :role, :string, default: "member"
 
     belongs_to :group, Group

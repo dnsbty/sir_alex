@@ -142,5 +142,32 @@ defmodule SirAlex.GroupsTest do
       member = member_fixture()
       assert %Ecto.Changeset{} = Groups.change_member(member)
     end
+
+    test "add_admin/2 adds an admin to a group" do
+      user = user_fixture()
+      group = group_fixture()
+      assert {:ok, admin} = Groups.add_admin(group, user)
+      assert admin.role == "admin"
+      assert admin.accepted_at != @epoch
+      assert admin.removed_at == @epoch
+    end
+
+    test "add_member/2 adds a member to a public group" do
+      user = user_fixture()
+      group = group_fixture(is_private?: false)
+      assert {:ok, member} = Groups.add_member(group, user)
+      assert member.role == "member"
+      assert member.accepted_at != @epoch
+      assert member.removed_at == @epoch
+    end
+
+    test "add_member/2 requests membership to a private group" do
+      user = user_fixture()
+      group = group_fixture(is_private?: true)
+      assert {:ok, request} = Groups.add_member(group, user)
+      assert request.role == "member"
+      assert request.accepted_at == @epoch
+      assert request.removed_at == @epoch
+    end
   end
 end
