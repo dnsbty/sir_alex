@@ -2,6 +2,10 @@ defmodule SirAlex.Accounts.User do
   use Ecto.Schema
   import Ecto.Changeset
   alias SirAlex.Accounts.User
+  alias SirAlex.Groups.{
+    Group,
+    Member
+  }
 
   @attrs [
     :email,
@@ -13,6 +17,8 @@ defmodule SirAlex.Accounts.User do
     field :email, :string
     field :facebook_id, :string
     field :name, :string
+
+    many_to_many :groups, Group, join_through: Member
 
     timestamps()
   end

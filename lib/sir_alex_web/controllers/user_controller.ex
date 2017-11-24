@@ -2,6 +2,7 @@ defmodule SirAlexWeb.UserController do
   use SirAlexWeb, :controller
 
   alias SirAlex.Accounts
+  plug :get_user when action in [:show, :edit, :update, :delete]
 
   def index(conn, _params) do
     users = Accounts.list_users()
@@ -12,20 +13,16 @@ defmodule SirAlexWeb.UserController do
     render(conn, "new.html")
   end
 
-  def show(conn, %{"id" => id}) do
-    user = Accounts.get_user!(id)
+  def show(%{assigns: %{user: user}} = conn, _) do
     render(conn, "show.html", user: user)
   end
 
-  def edit(conn, %{"id" => id}) do
-    user = Accounts.get_user!(id)
+  def edit(%{assigns: %{user: user}} = conn, _) do
     changeset = Accounts.change_user(user)
     render(conn, "edit.html", user: user, changeset: changeset)
   end
 
-  def update(conn, %{"id" => id, "user" => user_params}) do
-    user = Accounts.get_user!(id)
-
+  def update(%{assigns: %{user: user}} = conn, %{"user" => user_params}) do
     case Accounts.update_user(user, user_params) do
       {:ok, user} ->
         conn
@@ -36,12 +33,22 @@ defmodule SirAlexWeb.UserController do
     end
   end
 
-  def delete(conn, %{"id" => id}) do
-    user = Accounts.get_user!(id)
+  def delete(%{assigns: %{user: user}} = conn, _) do
     {:ok, _user} = Accounts.delete_user(user)
 
     conn
     |> put_flash(:info, "User deleted successfully.")
     |> redirect(to: page_path(conn, :index))
+  end
+
+  def get_user(%{params: %{"id" => user_id}} = conn, _) do
+    with {:ok, user} <- Accounts.get_user(user_id) do
+      assign(conn, :user, user)
+    else
+      error ->
+        conn
+        |> SirAlexWeb.FallbackController.call(error)
+        |> halt()
+    end
   end
 end

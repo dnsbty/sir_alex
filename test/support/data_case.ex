@@ -22,6 +22,7 @@ defmodule SirAlex.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import SirAlex.DataCase
+      import SirAlex.Factory
     end
   end
 

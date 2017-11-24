@@ -60,28 +60,35 @@ defmodule SirAlex.Groups do
         left_join: m in Member,
           on: g.id == m.group_id,
           on: m.user_id == ^user_id,
-          on: m.accepted_at != ^epoch,
           on: m.removed_at == ^epoch,
         left_join: c in Member,
           on: g.id == c.group_id,
           on: m.removed_at == ^epoch,
           on: m.accepted_at != ^epoch,
         where: g.id == ^group_id,
-        group_by: [g.id, m.role],
-        select: {g, count(c.user_id), m.role}
+        where: g.deleted_at == ^epoch,
+        group_by: [g.id, m.group_id, m.user_id, m.role, m.accepted_at, m.removed_at],
+        select: %{group: g, member_count: count(c.user_id), membership: m}
 
-    with {group, member_count, role} <- Repo.one(query) |> IO.inspect do
-      group = Kernel.struct(group, member_count: member_count)
-      role_map = get_role_info(role)
+    with %{group: group, member_count: count, membership: membership} <- Repo.one(query) do
+      group = Kernel.struct(group, member_count: count)
+      role_map = get_role_info(membership)
       {:ok, Map.merge(%{group: group}, role_map)}
     else
       _ -> {:error, %Ecto.NoResultsError{message: "Group not found"}}
     end
   end
 
-  defp get_role_info(nil), do: %{is_member?: false, is_admin?: false}
-  defp get_role_info("member"), do: %{is_member?: true, is_admin?: false}
-  defp get_role_info("admin"), do: %{is_member?: true, is_admin?: true}
+  defp get_role_info(nil), do: %{is_member?: false, is_admin?: false, has_requested?: false}
+  defp get_role_info(%{role: "admin"}) do
+    %{is_member?: true, is_admin?: true, has_requested?: false}
+  end
+  defp get_role_info(%{role: "member", accepted_at: ~N[1970-01-01 00:00:00]}) do
+    %{is_member?: false, is_admin?: false, has_requested?: true}
+  end
+  defp get_role_info(%{role: "member"}) do
+    %{is_member?: true, is_admin?: false, has_requested?: false}
+  end
 
   @doc """
   Gets a single group.
@@ -112,8 +119,8 @@ defmodule SirAlex.Groups do
 
   """
   def create_group_and_admin(attrs, admin) do
-    with {:ok, group} <- create_group(attrs) |> IO.inspect(label: "group creation"),
-      {:ok, _} <- add_admin(group, admin) |> IO.inspect(label: "admin adding") do
+    with {:ok, group} <- create_group(attrs),
+      {:ok, _} <- add_admin(group, admin) do
         {:ok, group}
     end
   end
@@ -160,14 +167,16 @@ defmodule SirAlex.Groups do
   ## Examples
 
       iex> delete_group(group)
-      {:ok, %Group{}}
+      {1, %Group{}}
 
       iex> delete_group(group)
       {:error, %Ecto.Changeset{}}
 
   """
   def delete_group(%Group{} = group) do
-    Repo.delete(group)
+    group
+    |> Group.changeset(%{deleted_at: NaiveDateTime.utc_now()})
+    |> Repo.update()
   end
 
   @doc """
@@ -193,13 +202,16 @@ defmodule SirAlex.Groups do
 
   """
   def list_members(group_id) do
+    epoch = @epoch
     query =
       from m in Member,
         join: u in assoc(m, :user),
         preload: [user: u],
         where: m.group_id == ^group_id,
+        where: m.accepted_at != ^epoch,
+        where: m.removed_at == ^epoch,
         order_by: u.name
-        
+
     Repo.all(query)
   end
 
@@ -210,14 +222,20 @@ defmodule SirAlex.Groups do
 
   ## Examples
 
-      iex> get_member!(123)
+      iex> get_member!(123, 456)
       %Member{}
 
-      iex> get_member!(456)
+      iex> get_member!(456, 789)
       ** (Ecto.NoResultsError)
 
   """
-  def get_member!(id), do: Repo.get!(Member, id)
+  def get_member!(group_id, user_id) do
+    query =
+      from m in Member,
+        where: m.group_id == ^group_id,
+        where: m.user_id == ^user_id
+    Repo.one!(query)
+  end
 
   @doc """
   Adds a user as an admin of a group.
@@ -231,11 +249,11 @@ defmodule SirAlex.Groups do
       {:error, %Ecto.Changeset{}}
 
   """
-  def add_admin(%{id: group_id} = group, %{id: user_id}) do
+  def add_admin(%{id: group_id}, %{id: user_id}) do
     attrs = %{
       group_id: group_id,
       user_id: user_id,
-      accepted_at: accepted_at(group),
+      accepted_at: NaiveDateTime.utc_now(),
       role: "admin"
     }
 
@@ -323,7 +341,11 @@ defmodule SirAlex.Groups do
 
   """
   def delete_member(%Member{} = member) do
-    Repo.delete(member)
+    query =
+      from m in Member,
+        where: m.group_id == ^member.group_id,
+        where: m.user_id == ^member.user_id
+    Repo.delete_all(query)
   end
 
   @doc """
@@ -346,7 +368,7 @@ defmodule SirAlex.Groups do
         where: m.user_id == ^user_id,
         where: m.removed_at == ^epoch,
         update: [set: [removed_at: ^NaiveDateTime.utc_now()]]
-    Repo.update_all(query, []) |> IO.inspect
+    Repo.update_all(query, [])
   end
 
   @doc """

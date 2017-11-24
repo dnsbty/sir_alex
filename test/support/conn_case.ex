@@ -21,6 +21,7 @@ defmodule SirAlexWeb.ConnCase do
       use Phoenix.ConnTest
       import SirAlexWeb.Router.Helpers
       import SirAlexWeb.AuthHelper
+      import SirAlex.Factory
 
       # The default endpoint for testing
       @endpoint SirAlexWeb.Endpoint

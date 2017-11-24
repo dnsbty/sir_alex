@@ -3,12 +3,15 @@ defmodule SirAlex.GroupsTest do
 
   alias SirAlex.{
     Accounts,
-    Groups
+    Groups,
+    Repo
   }
   alias SirAlex.Groups.{
     Group,
     Member
   }
+
+  @epoch ~N[1970-01-01 00:00:00.000000]
 
   describe "groups" do
     @valid_attrs %{description: "some description", is_private?: true, name: "some name"}
@@ -60,10 +63,11 @@ defmodule SirAlex.GroupsTest do
       assert group == Groups.get_group!(group.id)
     end
 
-    test "delete_group/1 deletes the group" do
+    test "delete_group/1 marks the group as deleted" do
       group = group_fixture()
       assert {:ok, %Group{}} = Groups.delete_group(group)
-      assert_raise Ecto.NoResultsError, fn -> Groups.get_group!(group.id) end
+      %{deleted_at: deleted_at} = Groups.get_group!(group.id)
+      assert deleted_at != @epoch
     end
 
     test "change_group/1 returns a group changeset" do
@@ -73,8 +77,7 @@ defmodule SirAlex.GroupsTest do
   end
 
   describe "members" do
-    @valid_attrs %{accepted_at: ~N[2010-04-17 14:00:00.000000], removed_at: ~N[2010-04-17 14:00:00.000000]}
-    @update_attrs %{accepted_at: ~N[2011-05-18 15:01:01.000000], removed_at: ~N[2011-05-18 15:01:01.000000]}
+    @valid_attrs %{accepted_at: ~N[2010-04-17 14:00:00.000000], removed_at: @epoch}
     @invalid_attrs %{user_id: 0, group_id: 0}
     @user_attrs %{
       email: "some email",
@@ -101,13 +104,13 @@ defmodule SirAlex.GroupsTest do
     end
 
     test "list_members/0 returns all members" do
-      member = member_fixture()
-      assert Groups.list_members() == [member]
+      member = Repo.preload(member_fixture(), :user)
+      assert Groups.list_members(member.group_id) == [member]
     end
 
     test "get_member!/1 returns the member with given id" do
       member = member_fixture()
-      assert Groups.get_member!(member.id) == member
+      assert Groups.get_member!(member.group_id, member.user_id) == member
     end
 
     test "create_member/1 with valid data creates a member" do
@@ -120,31 +123,19 @@ defmodule SirAlex.GroupsTest do
 
       assert {:ok, %Member{} = member} = created
       assert member.accepted_at == ~N[2010-04-17 14:00:00.000000]
-      assert member.removed_at == ~N[2010-04-17 14:00:00.000000]
+      assert member.removed_at == @epoch
     end
 
     test "create_member/1 with invalid data returns error changeset" do
       assert {:error, %Ecto.Changeset{}} = Groups.create_member(@invalid_attrs)
     end
 
-    test "update_member/2 with valid data updates the member" do
-      member = member_fixture()
-      assert {:ok, member} = Groups.update_member(member, @update_attrs)
-      assert %Member{} = member
-      assert member.accepted_at == ~N[2011-05-18 15:01:01.000000]
-      assert member.removed_at == ~N[2011-05-18 15:01:01.000000]
-    end
-
-    test "update_member/2 with invalid data returns error changeset" do
-      member = member_fixture()
-      assert {:error, %Ecto.Changeset{}} = Groups.update_member(member, @invalid_attrs)
-      assert member == Groups.get_member!(member.id)
-    end
-
     test "delete_member/1 deletes the member" do
       member = member_fixture()
-      assert {:ok, %Member{}} = Groups.delete_member(member)
-      assert_raise Ecto.NoResultsError, fn -> Groups.get_member!(member.id) end
+      assert {1, _} = Groups.delete_member(member)
+      assert_raise Ecto.NoResultsError, fn ->
+        Groups.get_member!(member.group_id, member.user_id)
+      end
     end
 
     test "change_member/1 returns a member changeset" do
