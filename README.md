@@ -1,4 +1,4 @@
-# Sir Alex
+# Sir Alex ![Sir Alex Build Status](https://img.shields.io/circleci/project/github/dnsbty/sir_alex/master.svg)
 ![ferguson-celebrate](https://user-images.githubusercontent.com/3421625/32137456-8b8a2236-bbdd-11e7-82a2-b6e28f4b2fd7.gif)
 
 Sir Alex is a group management platform, built on top of [Elixir](https://github.com/elixir-lang/elixir) and [Phoenix](https://github.com/phoenix-framework/phoenix). For more information on what this is going to be, check out [my essay on Sir Alex](https://dennisbeatty.com/2017/10/20/sir-alex-open-source-group-management-platform.html).
