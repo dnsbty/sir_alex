@@ -18,9 +18,9 @@
   </div>
 
   <div class="form-group">
-    <%= label f, :is_private, class: "control-label" %>
-    <%= checkbox f, :is_private, class: "checkbox" %>
-    <%= error_tag f, :is_private %>
+    <%= label f, :is_private?, class: "control-label" %>
+    <%= checkbox f, :is_private?, class: "checkbox" %>
+    <%= error_tag f, :is_private? %>
   </div>
 
   <div class="form-group">

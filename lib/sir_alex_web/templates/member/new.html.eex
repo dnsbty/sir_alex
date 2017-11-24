@@ -1,0 +1,5 @@
+<h2>New Member</h2>
+
+<%= render "form.html", Map.put(assigns, :action, member_path(@conn, :create, @group)) %>
+
+<span><%= link "Back", to: member_path(@conn, :index, @group) %></span>

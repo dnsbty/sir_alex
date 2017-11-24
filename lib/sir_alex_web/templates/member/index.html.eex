@@ -1,0 +1,32 @@
+<h2>Members of <%= @group.name %></h2>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Joined</th>
+      <%= if @is_admin? do %>
+      <th></th>
+      <% end %>
+    </tr>
+  </thead>
+  <tbody>
+<%= for member <- @members do %>
+    <tr>
+      <td><%= member.user.name %></td>
+      <td><%= member.accepted_at %></td>
+
+      <%= if @is_admin? do %>
+      <td class="text-right">
+        <span><%= link "Edit", to: member_path(@conn, :edit, @group, member.user_id), class: "btn btn-default btn-xs" %></span>
+        <span><%= link "Delete", to: member_path(@conn, :delete, @group, member.user_id), method: :delete, data: [confirm: "Are you sure?"], class: "btn btn-danger btn-xs" %></span>
+      </td>
+      <% end %>
+    </tr>
+<% end %>
+  </tbody>
+</table>
+
+<div>
+  <%= link "Back", to: group_path(@conn, :show, @group), class: "btn btn-secondary" %>
+</div>

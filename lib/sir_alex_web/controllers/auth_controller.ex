@@ -1,7 +1,10 @@
 defmodule SirAlexWeb.AuthController do
   use SirAlexWeb, :controller
   plug Ueberauth
-  alias SirAlex.Accounts
+  alias SirAlex.{
+    Accounts,
+    Groups
+  }
 
   def callback(%{assigns: %{ueberauth_auth: %{info: info, provider: provider, uid: uid}}} = conn, _params) do
     with {:ok, user} <- Accounts.create_user_from_auth(provider, uid, info) do

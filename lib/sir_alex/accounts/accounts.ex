@@ -8,6 +8,12 @@ defmodule SirAlex.Accounts do
 
   alias SirAlex.Accounts.User
   alias Ueberauth.Auth.Info
+  alias SirAlex.Groups.{
+    Group,
+    Member
+  }
+
+  @epoch ~N[1970-01-01 00:00:00.000000]
 
   @doc """
   Returns the list of users.
@@ -37,6 +43,37 @@ defmodule SirAlex.Accounts do
 
   """
   def get_user!(id), do: Repo.get!(User, id)
+
+  @doc """
+  Gets a single user with group memberships attached.
+
+  ## Examples
+
+      iex> get_user(123)
+      %User{}
+
+      iex> get_user(456)
+      {:error, %Ecto.NoResultsError}
+
+  """
+  def get_user(user_id) do
+    epoch = @epoch
+    query =
+      from u in User,
+        left_join: m in Member,
+          on: m.user_id == u.id,
+          on: m.accepted_at != ^epoch,
+          on: m.removed_at == ^epoch,
+        left_join: g in Group,
+          on: g.id == m.group_id,
+        where: u.id == ^user_id,
+        preload: [groups: g]
+
+    case Repo.one(query) do
+      nil -> {:error, %Ecto.NoResultsError{message: "No user found"}}
+      user -> {:ok, user}
+    end
+  end
 
   @doc """
   Creates a user.
@@ -74,9 +111,10 @@ defmodule SirAlex.Accounts do
       facebook_id: facebook_id,
       name: name
     }
+    query = from u in User, update: [set: [name: fragment("EXCLUDED.name")]]
     %User{}
     |> User.changeset(attrs)
-    |> Repo.insert(on_conflict: :nothing, returning: true)
+    |> Repo.insert(conflict_target: :facebook_id, on_conflict: query, returning: true)
   end
 
   @doc """

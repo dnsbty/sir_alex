@@ -1,0 +1,18 @@
+<h2>Show Member</h2>
+
+<ul>
+
+  <li>
+    <strong>Accepted at:</strong>
+    <%= @member.accepted_at %>
+  </li>
+
+  <li>
+    <strong>Removed at:</strong>
+    <%= @member.removed_at %>
+  </li>
+
+</ul>
+
+<span><%= link "Edit", to: member_path(@conn, :edit, @group, @member) %></span>
+<span><%= link "Back", to: member_path(@conn, :index, @group) %></span>

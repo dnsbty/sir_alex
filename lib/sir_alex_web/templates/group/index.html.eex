@@ -15,7 +15,7 @@
     <tr>
       <td><%= group.name %></td>
       <td><%= group.description %></td>
-      <td><%= group.is_private %></td>
+      <td><%= group.is_private? %></td>
 
       <td class="text-right">
         <span><%= link "Show", to: group_path(@conn, :show, group), class: "btn btn-default btn-xs" %></span>
