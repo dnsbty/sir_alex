@@ -7,9 +7,12 @@ jobs:
     working_directory: ~/sir_alex
     docker:
       - image: circleci/elixir:1.5
-      - image: postgres:9.6
         environment:
           MIX_ENV: test
+      - image: postgres:9.6
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
 
     steps:
       - checkout
